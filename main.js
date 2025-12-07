@@ -1,87 +1,54 @@
-// Waiting until document has loaded
-window.onload = () => {
+// set the dimensions and margins of the graph
+const margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
 
-      // YOUR CODE GOES HERE
-      console.log("YOUR CODE GOES HERE");
-
-      // // Load the data set from the assets folder:
-      // d3.csv("cars.csv", function(error, data) {
-      //       console.log(data)
-      //       data.forEach(function(d) {
-      //             d.date = parseDate(d.date);
-      //             d.value = +d.value;
-      //             console.log(d)
-                  
-      //       });
-      // })
-
-      var margin = {top: 20, right: 20, bottom: 70, left: 40},
-    width = 600 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
-
-// Parse the date / time
-var parseDate = d3.time.format("%Y-%m").parse;
-
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-
-var y = d3.scale.linear().range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(d3.time.format("%Y-%m"));
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
-
-var svg = d3.select("body").append("svg")
+// append the svg object to the body of the page
+const svg = d3.select("#my_dataviz")
+    .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", 
-          "translate(" + margin.left + "," + margin.top + ")");
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-d3.csv("./cars.csv", function(error, data) {
+let maxX = 0
+let maxY = 0
+//Read the data
+d3.csv("cars.csv").then( function(data) {
+      const attributeX = "Weight"
+      const attributeY = "Horsepower(HP)"
+      data.forEach(function (d){
+            if(Number(d[attributeX]) > maxX){
+                  
+                  maxX = Number(d[attributeX])
+            }
+            if(Number(d[attributeY]) > maxY){
+                  maxY = Number(d[attributeY])
+            }
+      })
+      // Add X axis
+      const x = d3.scaleLinear()
+      .domain([0, maxX])
+      .range([ 0, width ]);
+      svg.append("g")
+      .attr("transform", `translate(0, ${height})`)
+      .call(d3.axisBottom(x));
 
-    data.forEach(function(d) {
-        d.date = parseDate(d.date);
-        d.value = +d.value;
-    });
- 
-  x.domain(data.map(function(d) { return d.date; }));
-  y.domain([0, d3.max(data, function(d) { return d.value; })]);
+      // Add Y axis
+      const y = d3.scaleLinear()
+      .domain([0, maxY])
+      .range([ height, 0]);
+      svg.append("g")
+      .call(d3.axisLeft(y));
 
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.55em")
-      .attr("transform", "rotate(-90)" );
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Value ($)");
-
-  svg.selectAll("bar")
+      // Add dots
+      svg.append('g')
+      .selectAll("dot")
       .data(data)
-    .enter().append("rect")
-      .style("fill", "steelblue")
-      .attr("x", function(d) { return x(d.date); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); });
+      .join("circle")
+            .attr("cx", function (d) { return x(d[attributeX]); } )
+            .attr("cy", function (d) { return y(d[attributeY]); } )
+            .attr("r", 1.5)
+            .style("fill", "#69b3a2")
 
-});
-
-};
+})
