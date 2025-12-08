@@ -30,7 +30,7 @@ const legend = d3.select("#legend")
 
 const tooltip = d3.select("#tooltip")
       .append("svg")
-      .attr("width", 400)
+      .attr("width", 600)
       .attr("height", 580)
       .append("g")
 
@@ -39,8 +39,28 @@ let maxY = 0
 
 const tooltipInformation = ["Name", "Type", "Cyl", "Horsepower(HP)", "City Miles Per Gallon", "Highway Miles Per Gallon", "Weight", "Wheel Base", "Len", "Width"]
 
-function displayInformation(d){
-
+function displayInformation(data){
+      let tooltipValue = []
+      tooltipInformation.map(attr => tooltipValue.push(String(data[attr])))
+      
+      tooltip.selectAll("mylabels")
+            .data(tooltipInformation)
+            .enter()
+            .append("text")
+                  .attr("x", 0)
+                  .attr("y", function(d,i){ return 67 + i*(25)})
+                  .text(function(d, i){ return `${d}:`})
+                  .attr("text-anchor", "left")
+                  .style("alignment-baseline", "middle")
+      tooltip.selectAll("mylabels")
+            .data(tooltipValue)
+            .enter()
+            .append("text")
+                  .attr("x", 200)
+                  .attr("y", function(d,i){ return 67 + i*(25)})
+                  .text(function(d){ return d})
+                  .attr("text-anchor", "left")
+                  .style("alignment-baseline", "middle")
 }
 
 //Read the data
@@ -50,6 +70,7 @@ d3.csv("cars.csv").then( function(data) {
       const attributeColor = "Cyl"
       const attributeShape = "Type"
 
+      // selected point returns to initial color, when clicked somewhere else
       let lastElt = null
       let lastData = null
       d3.select("body").on("mousedown", function(){
@@ -59,11 +80,9 @@ d3.csv("cars.csv").then( function(data) {
                         .transition()
                         .duration(400)
                         .style("fill", lastData => color(lastData[attributeColor]));
-                  console.log("cleared")
                   lastData = null
                   lastElt = null
             }
-            
       })
 
       data.forEach(function (d){
@@ -116,24 +135,13 @@ d3.csv("cars.csv").then( function(data) {
             .attr("transform", d => `translate(${x(d[attributeX])}, ${y(d[attributeY])})`)
             .attr("d", d3.symbol().type(d => shape(d[attributeShape])).size(25))
             .attr("fill", d => color(d[attributeColor]))
-            // Tooltip styling when mouse hovers over
+            // Clicked point turns cyan, show information to car
             .on("mouseup", function (d, i) {
                   d3.select(this).style("fill", "#a8eddf");
                   lastData = d
                   lastElt = d3.select(this)
-                  console.log("new")
                   displayInformation(d)          
-            })
-
-            // Tooltip styling when mouse is off the point
-            // .on("mouseout", function () {
-                  // d3.select(this)
-                  // .transition()
-                  // .duration(400)
-                  // .style("fill", d => color(d[attributeColor]));
-            // })
-
-      
+            })      
 
       // Label x axis
       svg.append("text")
