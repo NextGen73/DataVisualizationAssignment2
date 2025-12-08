@@ -3,7 +3,7 @@
 * https://stackoverflow.com/questions/11189284/d3-axis-labeling
 * https://chatgpt.com to make points with different shape and color
 * https://d3-graph-gallery.com/graph/custom_legend.html#cat3
-*
+* https://stackoverflow.com/questions/22452112/nvd3-clear-svg-before-loading-new-chart
 *
 */
 
@@ -37,12 +37,34 @@ const tooltip = d3.select("#tooltip")
 let maxX = 0
 let maxY = 0
 
+const tooltipInformation = ["Name", "Type", "Cyl", "Horsepower(HP)", "City Miles Per Gallon", "Highway Miles Per Gallon", "Weight", "Wheel Base", "Len", "Width"]
+
+function displayInformation(d){
+
+}
+
 //Read the data
 d3.csv("cars.csv").then( function(data) {
       const attributeX = "Weight"
       const attributeY = "Horsepower(HP)"
       const attributeColor = "Cyl"
       const attributeShape = "Type"
+
+      let lastElt = null
+      let lastData = null
+      d3.select("body").on("mousedown", function(){
+            if(lastData && lastElt){
+                  tooltip.selectAll("*").remove();
+                  lastElt
+                        .transition()
+                        .duration(400)
+                        .style("fill", lastData => color(lastData[attributeColor]));
+                  console.log("cleared")
+                  lastData = null
+                  lastElt = null
+            }
+            
+      })
 
       data.forEach(function (d){
             if(Number(d[attributeX]) > maxX){
@@ -55,7 +77,6 @@ d3.csv("cars.csv").then( function(data) {
 
       const cylValues = ["0", "3", "4", "5", "6", "8", "9", "12"]
       const color = d3.scaleOrdinal()
-            // .domain(data.map(d => Number(d[attributeColor])))
             .domain(cylValues)
             .range(d3.schemeCategory10);
 
@@ -96,23 +117,23 @@ d3.csv("cars.csv").then( function(data) {
             .attr("d", d3.symbol().type(d => shape(d[attributeShape])).size(25))
             .attr("fill", d => color(d[attributeColor]))
             // Tooltip styling when mouse hovers over
-            .on("mouseover", function (d, i) {
+            .on("mouseup", function (d, i) {
                   d3.select(this).style("fill", "#a8eddf");
-                  tooltip.attr("id", "tooltip")
-                  tooltip.style("fill", "#a8eddf")
-                  tooltip.attr("data-date", d[0])
-                  tooltip.style('background-size','cover')
-                  tooltip.style('opacity', 1)             
+                  lastData = d
+                  lastElt = d3.select(this)
+                  console.log("new")
+                  displayInformation(d)          
             })
 
             // Tooltip styling when mouse is off the point
-            .on("mouseout", function () {
-                  d3.select(this)
-                  .transition()
-                  .duration(400)
-                  .style("fill", "#4aa89c");
-                  tooltip.style("opacity", 0);
-            })
+            // .on("mouseout", function () {
+                  // d3.select(this)
+                  // .transition()
+                  // .duration(400)
+                  // .style("fill", d => color(d[attributeColor]));
+            // })
+
+      
 
       // Label x axis
       svg.append("text")
