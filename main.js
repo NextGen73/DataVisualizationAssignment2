@@ -1,9 +1,8 @@
 /* sources used:
-* https://d3-graph-gallery.com/graph/custom_legend.html#cat3
-* https://stackoverflow.com/questions/11189284/d3-axis-labeling
 * https://d3-graph-gallery.com/graph/scatter_basic.html
+* https://stackoverflow.com/questions/11189284/d3-axis-labeling
 * https://chatgpt.com to make points with different shape and color
-*
+* https://d3-graph-gallery.com/graph/custom_legend.html#cat3
 *
 *
 */
