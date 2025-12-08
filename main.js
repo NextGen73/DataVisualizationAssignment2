@@ -1,7 +1,18 @@
+/* sources used:
+* https://d3-graph-gallery.com/graph/custom_legend.html#cat3
+* https://stackoverflow.com/questions/11189284/d3-axis-labeling
+* https://d3-graph-gallery.com/graph/scatter_basic.html
+* https://chatgpt.com to make points with different shape and color
+*
+*
+*
+*/
+
+
 // set the dimensions and margins of the graph
 const margin = {top: 10, right: 30, bottom: 30, left: 60},
-      width = 460 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+      width = 1000 - margin.left - margin.right,
+      height = 1000 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -10,6 +21,19 @@ const svg = d3.select("#my_dataviz")
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+const legend = d3.select("#legend")
+      .append("svg")
+      .attr("width", 200)
+      .attr("height", 420)
+      .append("g")
+      .attr("transform", `translate(${0}, ${margin.top})`);    
+
+const tooltip = d3.select("#tooltip")
+      .append("svg")
+      .attr("width", 400)
+      .attr("height", 580)
+      .append("g")
 
 let maxX = 0
 let maxY = 0
@@ -30,10 +54,12 @@ d3.csv("cars.csv").then( function(data) {
             }
       })
 
+      const cylValues = ["0", "3", "4", "5", "6", "8", "9", "12"]
       const color = d3.scaleOrdinal()
-            .domain(data.map(d => d[attributeColor]))
+            // .domain(data.map(d => Number(d[attributeColor])))
+            .domain(cylValues)
             .range(d3.schemeCategory10);
-      
+
       const shape = d3.scaleOrdinal()
             .domain(data.map(d => d[attributeShape]))
             .range([
@@ -47,33 +73,49 @@ d3.csv("cars.csv").then( function(data) {
 
       // Add X axis
       const x = d3.scaleLinear()
-      .domain([0, 1.1*maxX])
-      .range([ 0, width ]);
+            .domain([0, 1.1*maxX])
+            .range([ 0, width ]);
       svg.append("g")
-      .attr("transform", `translate(0, ${height})`)
-      .call(d3.axisBottom(x));
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
 
       // Add Y axis
       const y = d3.scaleLinear()
-      .domain([0, 1.1*maxY])
-      .range([ height, 0]);
+            .domain([0, 1.1*maxY])
+            .range([ height, 0]);
       svg.append("g")
-      .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y));
 
       // Add dots
       svg.append('g')
-      .selectAll("path.point")
-      .data(data)
-      .enter()
-      .append("path")
-      .attr("class", "point")
-      .attr("transform", d => `translate(${x(d[attributeX])}, ${y(d[attributeY])})`)
-      .attr("d", d3.symbol().type(d => shape(d[attributeShape])).size(15))
-      // .join("circle")
-      //       .attr("cx", function (d) { return x(d[attributeX]); } )
-      //       .attr("cy", function (d) { return y(d[attributeY]); } )
-      .attr("fill", d => color(d[attributeColor]))
+            .selectAll("path.point")
+            .data(data)
+            .enter()
+            .append("path")
+            .attr("class", "point")
+            .attr("transform", d => `translate(${x(d[attributeX])}, ${y(d[attributeY])})`)
+            .attr("d", d3.symbol().type(d => shape(d[attributeShape])).size(25))
+            .attr("fill", d => color(d[attributeColor]))
+            // Tooltip styling when mouse hovers over
+            .on("mouseover", function (d, i) {
+                  d3.select(this).style("fill", "#a8eddf");
+                  tooltip.attr("id", "tooltip")
+                  tooltip.style("fill", "#a8eddf")
+                  tooltip.attr("data-date", d[0])
+                  tooltip.style('background-size','cover')
+                  tooltip.style('opacity', 1)             
+            })
 
+            // Tooltip styling when mouse is off the point
+            .on("mouseout", function () {
+                  d3.select(this)
+                  .transition()
+                  .duration(400)
+                  .style("fill", "#4aa89c");
+                  tooltip.style("opacity", 0);
+            })
+
+      // Label x axis
       svg.append("text")
             .attr("class", "x label")
             .attr("text-anchor", "end")
@@ -81,6 +123,7 @@ d3.csv("cars.csv").then( function(data) {
             .attr("y", height - 6)
             .text(attributeX);
 
+      // Label y axis
       svg.append("text")
             .attr("class", "y label")
             .attr("text-anchor", "end")
@@ -88,4 +131,73 @@ d3.csv("cars.csv").then( function(data) {
             .attr("dy", ".75em")
             .attr("transform", "rotate(-90)")
             .text(attributeY);
+
+      // Build legend
+      const size = 20
+      legend.append("text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .text("Legend:")
+            .attr("dy", ".75em")
+            .style("font-size", "18px")
+
+      legend.append("text")
+            .attr("x", 0)
+            .attr("y", 45)
+            .text("Number of cylinders:")
+
+      legend.selectAll("mydots")
+            .data(cylValues)
+            .enter()
+            .append("rect")
+                  .attr("x", 0)
+                  .attr("y", function(d,i){ return 55 + i*(size+5)})
+                  .attr("width", size)
+                  .attr("height", size)
+                  .style("fill", function(d){ return color(d)})
+      
+      legend.selectAll("mylabels")
+            .data(cylValues)
+            .enter()
+            .append("text")
+                  .attr("x", size+10)
+                  .attr("y", function(d,i){ return 67 + i*(size+5)})
+                  .style("fill", function(d){ return color(d)})
+                  .text(function(d){ return d})
+                  .attr("text-anchor", "left")
+                  .style("alignment-baseline", "middle")
+
+      const setOfShapeValues = new Set
+      data.forEach(d => {
+            setOfShapeValues.add(d[attributeShape])
+      })
+      const arrayOfShapeValues = setOfShapeValues.values().toArray()
+
+      legend.append("text")
+            .attr("x", 0)
+            .attr("y", 280)
+            .text("Type:")
+
+      legend.append('g')
+            .selectAll("path.point")
+            .data(arrayOfShapeValues)
+            .enter()
+            .append("path")
+            .attr("class", "point")
+            .attr("transform", function(d,i){ return `translate(10, ${300 + i*(size+5)})`})
+            .attr("d", d3.symbol().type(d => shape(d)).size(150))
+            .attr("fill", "#000000")
+
+      legend.selectAll("mylabels")
+            .data(arrayOfShapeValues)
+            .enter()
+            .append("text")
+                  .attr("x", size+10)
+                  .attr("y", function(d,i){ return 300 + i*(size+5)})
+                  .style("fill", "#000000")
+                  .text(function(d){ return d})
+                  .attr("text-anchor", "left")
+                  .style("alignment-baseline", "middle")
+            
+            
 })

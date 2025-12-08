@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>DataVis - Assignment 2</title>
     
-    Instead of this blank page, your beautiful visualizations should appear here :)
     
     <!-- Loading d3js version 5-->
     <script src="d3.v5.min.js"></script>
@@ -16,9 +15,13 @@
 </head>
 
 <body>
-<div id="my_dataviz"></div>
-<!-- YOUR SOLUTION GOES HERE-->
-
+      <table><tr valign="top">
+            <td rowspan="2" valign="top"><div id="my_dataviz"></div></td>
+            <td valign="top"><div id="legend"></div></td>
+      </tr>
+      <tr valign="top">
+            <td valign="top"><div id="tooltip"></div></td>
+      </tr></table>
 
 <!-- loading the main javascript file; implement logic there -->
 <script src="main.js"></script>
