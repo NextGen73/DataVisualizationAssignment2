@@ -1,0 +1,17 @@
+main principle of SPLOM:
+ - way of plotting multiple dimensions without loss of the orthogonality of axes
+ - recognize easily correlated attributes
+
+
+You need 1/2*n*(n-1) scatterplots for n attributes.
+
+Advantages:
+Every combination of two attributes is shown and in each scatterplot, the axes are orthogonal.
+Therefore you can see correlations or anti-correlations easily.
+It supports attribute visibility and you dont need interactive tools to understand the data (a 3d plot without interaction can sometimes be misleading).
+
+Disadvantages:
+As the number of scatterplots grows quadratically with the number of attributes, it gets big pretty fast.
+As there are only combinations of 2 attributes, you cannot see relations between 3 or more attributes.
+
+Link to Assignment in Github: https://github.com/NextGen73/DataVisualizationAssignment2
